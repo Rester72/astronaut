@@ -1,0 +1,99 @@
+using UnityEngine;
+
+[RequireComponent(typeof(Rigidbody2D))]
+public class PlayerMovement : MonoBehaviour
+{
+    [Header("Movement")]
+    public float moveSpeed = 5f;
+    public float jumpForce = 8f;
+
+    [Header("References")]
+    public Animator animator;        // Drag Animator here
+    public Transform groundCheck;
+    public LayerMask groundLayer;
+
+    private Rigidbody2D rb;
+    private float moveInput;
+    private bool isFacingRight = true;
+    private bool isGrounded;
+    private bool isJumping;           // Jump state flag
+
+    void Awake()
+    {
+        rb = GetComponent<Rigidbody2D>();
+    }
+
+    void Update()
+    {
+        CheckGround();
+        HandleMovement();
+        HandleJump();
+        UpdateAnimator();
+        HandleFlip();
+    }
+
+    void CheckGround()
+    {
+        bool wasGrounded = isGrounded;
+        isGrounded = Physics2D.OverlapCircle(groundCheck.position, 0.2f, groundLayer);
+
+        // Player just landed
+        if (isGrounded && !wasGrounded)
+        {
+            OnLanding();
+        }
+    }
+
+    void HandleMovement()
+    {
+        moveInput = Input.GetAxisRaw("Horizontal");
+        rb.linearVelocity = new Vector2(moveInput * moveSpeed, rb.linearVelocity.y);
+    }
+
+    void HandleJump()
+    {
+        if (Input.GetButtonDown("Jump") && isGrounded)
+        {
+            rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
+
+            isJumping = true;
+            animator.SetBool("IsJumping", true); // start jump animation
+        }
+    }
+
+    void UpdateAnimator()
+    {
+        animator.SetFloat("Speed", Mathf.Abs(moveInput));
+    }
+
+    void HandleFlip()
+    {
+        if (moveInput > 0 && !isFacingRight)
+            Flip();
+        else if (moveInput < 0 && isFacingRight)
+            Flip();
+    }
+
+    void Flip()
+    {
+        isFacingRight = !isFacingRight;
+        Vector3 scale = transform.localScale;
+        scale.x *= -1;
+        transform.localScale = scale;
+    }
+
+    // ✅ Landing logic isolated here
+    public void OnLanding()
+    {
+        isJumping = false;
+        animator.SetBool("IsJumping", false);
+    }
+    void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (((1 << collision.gameObject.layer) & groundLayer) != 0)
+        {
+            OnLanding();
+        }
+    }
+
+}
