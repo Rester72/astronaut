@@ -1,0 +1,71 @@
+using UnityEngine;
+
+public class HoverBotFollow : MonoBehaviour
+{
+    public Transform player;
+    public Vector3 offset;
+
+    [Header("Follow")]
+    public float followSpeed = 10f;   // Max speed
+    public float delay = 0.15f;       // Delay amount (higher = more lag)
+
+    private bool facingRight = true;
+    private Rigidbody2D playerRB;
+    private SpriteRenderer botSprite;
+
+    private Vector3 followVelocity;
+
+    void Start()
+    {
+        playerRB = player.GetComponent<Rigidbody2D>();
+        botSprite = GetComponent<SpriteRenderer>();
+    }
+
+    void FixedUpdate()
+    {
+        if (!player) return;
+
+        HandleFlipStable();
+        FollowWithDelay();
+    }
+
+    void FollowWithDelay()
+    {
+        Vector3 target = player.position + offset;
+
+        transform.position = Vector3.SmoothDamp(
+            transform.position,
+            target,
+            ref followVelocity,
+            delay,
+            followSpeed,
+            Time.fixedDeltaTime
+        );
+    }
+
+    void HandleFlipStable()
+    {
+        if (!playerRB) return;
+
+        float velX = playerRB.velocity.x;
+
+        if (Mathf.Abs(velX) < 0.05f)
+            return;
+
+        if (velX > 0 && !facingRight)
+            Flip();
+        else if (velX < 0 && facingRight)
+            Flip();
+    }
+
+    void Flip()
+    {
+        facingRight = !facingRight;
+
+        // keep front/back
+        offset.x *= -1;
+
+        // flip sprite only
+        botSprite.flipX = !botSprite.flipX;
+    }
+}
