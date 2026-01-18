@@ -1,0 +1,35 @@
+using UnityEngine;
+
+public class Weapon2D : MonoBehaviour
+{
+    [Header("Weapon Settings")]
+    public GameObject bulletPrefab; // Assign your bullet prefab here
+    public Transform firePoint;     // Assign your FirePoint here
+    public float bulletSpeed = 10f;
+    public float fireRate = 0.5f;  // Seconds between shots
+
+    private float nextFireTime = 0f;
+
+    void Update()
+    {
+        // Shoot when left mouse button or "Fire1" is pressed and cooldown allows
+        if (Input.GetButton("Fire1") && Time.time >= nextFireTime)
+        {
+            Shoot();
+            nextFireTime = Time.time + fireRate; // Set next allowed fire time
+        }
+    }
+
+    void Shoot()
+    {
+        // Create a bullet at the firePoint's position and rotation
+        GameObject bullet = Instantiate(bulletPrefab, firePoint.position, firePoint.rotation);
+
+        // Make the bullet move
+        Rigidbody2D rb = bullet.GetComponent<Rigidbody2D>();
+        if (rb != null)
+        {
+            rb.linearVelocity = firePoint.right * bulletSpeed; // "right" assumes firePoint points along X-axis
+        }
+    }
+}
