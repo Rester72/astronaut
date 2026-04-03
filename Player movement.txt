@@ -7,8 +7,11 @@ public class PlayerMovement : MonoBehaviour
     public float moveSpeed = 5f;
     public float jumpForce = 8f;
 
+    [Header("Jump Settings")]
+    public int maxJumps = 3;   // Total jumps allowed
+
     [Header("References")]
-    public Animator animator;        // Drag Animator here
+    public Animator animator;
     public Transform groundCheck;
     public LayerMask groundLayer;
 
@@ -16,7 +19,9 @@ public class PlayerMovement : MonoBehaviour
     private float moveInput;
     private bool isFacingRight = true;
     private bool isGrounded;
-    private bool isJumping;           // Jump state flag
+    private bool isJumping;
+
+    private int jumpCount = 0;   // Track jumps used
 
     void Awake()
     {
@@ -37,7 +42,7 @@ public class PlayerMovement : MonoBehaviour
         bool wasGrounded = isGrounded;
         isGrounded = Physics2D.OverlapCircle(groundCheck.position, 0.2f, groundLayer);
 
-        // Player just landed
+        // Reset jumps when player lands
         if (isGrounded && !wasGrounded)
         {
             OnLanding();
@@ -52,12 +57,15 @@ public class PlayerMovement : MonoBehaviour
 
     void HandleJump()
     {
-        if (Input.GetButtonDown("Jump") && isGrounded)
+        // Allow jumping until max jumps reached
+        if (Input.GetButtonDown("Jump") && jumpCount < maxJumps)
         {
             rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
 
+            jumpCount++;   // Increase jump count
+
             isJumping = true;
-            animator.SetBool("IsJumping", true); // start jump animation
+            animator.SetBool("IsJumping", true);
         }
     }
 
@@ -82,12 +90,13 @@ public class PlayerMovement : MonoBehaviour
         transform.localScale = scale;
     }
 
-    // ✅ Landing logic isolated here
     public void OnLanding()
     {
+        jumpCount = 0;   // Reset jumps on landing
         isJumping = false;
         animator.SetBool("IsJumping", false);
     }
+
     void OnCollisionEnter2D(Collision2D collision)
     {
         if (((1 << collision.gameObject.layer) & groundLayer) != 0)
@@ -95,5 +104,4 @@ public class PlayerMovement : MonoBehaviour
             OnLanding();
         }
     }
-
 }
