@@ -1,0 +1,32 @@
+using UnityEngine;
+
+public class DamageDealer : MonoBehaviour
+{
+    public int damage = 10;
+
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        DealDamage(collision.gameObject);
+    }
+
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        DealDamage(collision.gameObject);
+    }
+
+    void DealDamage(GameObject target)
+    {
+        PlayerHealth player = target.GetComponent<PlayerHealth>();
+
+        if (player != null)
+        {
+            player.TakeDamage(damage);
+
+            // Destroy only if this is a bullet
+            if (gameObject.CompareTag("Bullet"))
+            {
+                Destroy(gameObject);
+            }
+        }
+    }
+}
