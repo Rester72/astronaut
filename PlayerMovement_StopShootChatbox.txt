@@ -1,0 +1,19 @@
+void HandleShooting()
+{
+    // 🚫 Block shooting animation during dialogue
+    if (DialogueManager.isDialogueActive)
+    {
+        animator.SetBool("IsShooting", false); // ensure it's OFF
+        return;
+    }
+
+    if (Input.GetMouseButtonDown(0)) // Left click
+    {
+        animator.SetBool("IsShooting", true);
+    }
+
+    if (Input.GetMouseButtonUp(0))
+    {
+        animator.SetBool("IsShooting", false);
+    }
+}
